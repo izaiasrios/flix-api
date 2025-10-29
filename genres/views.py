@@ -18,9 +18,17 @@ def genre_create_list_view(request):
 
 @csrf_exempt   
 def genre_detail_view(request, genre_id):
-    try:
-        genre = Genre.objects.get(id=genre_id)
+    genre = get_object_or_404(Genre, id=genre_id)
+    if request.method == 'GET':
         data = {"id": genre.id, "name": genre.name}
         return JsonResponse(data)
-    except Genre.DoesNotExist:
-        return JsonResponse({"error": "Genre not found"}, status=404)
+    
+    elif request.method == 'PUT':
+        data = json.loads(request.body.decode('utf-8'))
+        genre.name = data['name']
+        genre.save()
+        return JsonResponse({"id": genre.id, "name": genre.name}, status=201)
+    elif request.method == 'DELETE':
+        genre.delete()
+        return JsonResponse({'message': 'Genre deleted successfully'}, status=204)
+    
